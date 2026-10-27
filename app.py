@@ -13,6 +13,7 @@ import os
 import sys
 import difflib
 import logging
+import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
@@ -46,6 +47,33 @@ app = Flask(
     template_folder=str(config.TEMPLATES_DIR)
 )
 CORS(app)
+
+class VercelPathFixer:
+    """
+    WSGI Middleware to restore original request paths on Vercel.
+    When Vercel uses `rewrites` to route /(.*) -> /api/index?__path=$1,
+    the captured path is passed in __path. This middleware extracts __path,
+    sets PATH_INFO to the exact user-requested route, and removes __path from
+    QUERY_STRING so Flask sees the original, clean request.
+    """
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        qs = environ.get("QUERY_STRING", "")
+        params = urllib.parse.parse_qs(qs, keep_blank_values=True)
+
+        if "__path" in params:
+            raw_path = params.pop("__path")[0]
+            environ["PATH_INFO"] = "/" + raw_path.lstrip("/")
+            environ["QUERY_STRING"] = urllib.parse.urlencode(params, doseq=True)
+        elif environ.get("PATH_INFO", "").startswith("/api/index"):
+            remainder = environ["PATH_INFO"][len("/api/index"):]
+            environ["PATH_INFO"] = remainder if remainder else "/"
+
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFixer(app.wsgi_app)
 
 stemmer = PorterStemmer()
 
@@ -351,16 +379,7 @@ def format_movie_payload(row, score=None, content_score=None, collab_score=None,
 # 4. REST API Routes
 # -------------------------------------------------------------
 @app.route("/")
-@app.route("/api/index")
-@app.route("/api/index.py")
 def index():
-    if request.args.get("debug"):
-        return jsonify({
-            "path": request.path,
-            "args": dict(request.args),
-            "headers": dict(request.headers),
-            "environ": {k: str(v) for k, v in request.environ.items() if isinstance(v, (str, int, float)) and not k.startswith("werkzeug.")},
-        })
     return render_template("index.html")
 
 @app.route("/api/placeholder", methods=["GET"])
@@ -727,8 +746,6 @@ def get_top_rated():
 
 @app.errorhandler(404)
 def not_found(e):
-    if request.path in ["/api/index", "/api/index.py"]:
-        return render_template("index.html")
     if request.path.startswith("/api/"):
         return jsonify({"error": "Resource not found", "path": request.path}), 404
     return render_template("index.html"), 404
