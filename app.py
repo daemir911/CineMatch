@@ -351,6 +351,8 @@ def format_movie_payload(row, score=None, content_score=None, collab_score=None,
 # 4. REST API Routes
 # -------------------------------------------------------------
 @app.route("/")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def index():
     return render_template("index.html")
 
@@ -718,8 +720,10 @@ def get_top_rated():
 
 @app.errorhandler(404)
 def not_found(e):
+    if request.path in ["/api/index", "/api/index.py"]:
+        return render_template("index.html")
     if request.path.startswith("/api/"):
-        return jsonify({"error": "Resource not found"}), 404
+        return jsonify({"error": "Resource not found", "path": request.path}), 404
     return render_template("index.html"), 404
 
 if __name__ == "__main__":
