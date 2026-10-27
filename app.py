@@ -354,6 +354,13 @@ def format_movie_payload(row, score=None, content_score=None, collab_score=None,
 @app.route("/api/index")
 @app.route("/api/index.py")
 def index():
+    if request.args.get("debug"):
+        return jsonify({
+            "path": request.path,
+            "args": dict(request.args),
+            "headers": dict(request.headers),
+            "environ": {k: str(v) for k, v in request.environ.items() if isinstance(v, (str, int, float)) and not k.startswith("werkzeug.")},
+        })
     return render_template("index.html")
 
 @app.route("/api/placeholder", methods=["GET"])
