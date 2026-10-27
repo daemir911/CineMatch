@@ -1,0 +1,12 @@
+# Local Development & Model Training Requirements
+# Run: pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# Collaborative Filtering Offline Training
+scikit-surprise>=1.1.4
+
+# Notebook & Development
+jupyter>=1.0.0
+notebook>=7.0.0
+ipykernel>=6.0.0

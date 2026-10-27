@@ -1,0 +1,25 @@
+# Python virtual environments & bytecode
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Heavy offline similarity matrices (>100MB exceeds GitHub limits; not needed at runtime)
+model/content_sim.pkl
+model/collab_sim.pkl
+
+# Raw CSV datasets
+data/*.csv
+
+# Local environment variables & secrets
+.env
+
+# Vercel deployment cache
+.vercel/
+
+# Temporary / OS files
+.DS_Store
+Thumbs.db

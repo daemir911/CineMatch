@@ -1,0 +1,28 @@
+# Virtual environment and Python caches
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+
+# Heavy offline similarity matrices (>770MB - not required at runtime)
+model/content_sim.pkl
+model/collab_sim.pkl
+
+# Raw CSV datasets (offline training & data build only)
+data/*.csv
+data/README.txt
+
+# Development, scripts, and documentation
+notebook/
+scripts/
+scratch/
+train.py
+generate_project_pdf.py
+*.pdf
+run.bat
+run.sh
+.env
+.git/

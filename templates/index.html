@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CineMatch - Modern AI Movie Recommendation System. 13,000+ films, personalized hybrid machine learning recommendations, interactive catalog, and rich movie details." />
+  
+  <title>CineMatch | Modern AI Movie Recommender</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍿</text></svg>" />
+</head>
+<body class="dark-theme">
+
+  <!-- ====================================================================
+       1. NAVIGATION BAR
+       ==================================================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-wrapper">
+      <a href="/" class="logo" aria-label="CineMatch Home">
+        <div class="logo-mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+          </svg>
+        </div>
+        <span class="logo-text">Cine<span class="logo-accent">Match</span></span>
+        <span class="logo-badge">13,000+ FILMS</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#recommendationsSection" class="nav-link" id="navRecsLink">Recommendations</a>
+        <a href="#popularSection" class="nav-link">Trending</a>
+        <a href="#topRatedSection" class="nav-link">Top Rated</a>
+        <a href="#browseSection" class="nav-link">Browse Catalog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="navSearchTrigger" class="nav-search-btn" title="Focus search bar (Press /)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="nav-search-label">Search</span>
+          <kbd class="kbd-shortcut">/</kbd>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================================================================
+         2. HERO SEARCH SECTION
+         ================================================================== -->
+    <section class="hero-section">
+      <div class="hero-backdrop-glow"></div>
+      <div class="container hero-container">
+        <div class="hero-badge-pill">
+          <span class="pulse-dot"></span>
+          <span>Dual-Engine AI Hybrid Recommender</span>
+        </div>
+
+        <h1 class="hero-title">
+          Discover Movies Tailored to <span class="gradient-text">Your Exact Taste</span>
+        </h1>
+        <p class="hero-subtitle">
+          Blends rich storyline plot tags, directors, and top cast with 100,000+ collaborative viewer rating patterns across 13,000+ movies.
+        </p>
+
+        <!-- Prominent Search Bar with Fuzzy Autocomplete -->
+        <div class="search-container">
+          <div class="search-bar-wrapper">
+            <div class="search-icon-wrapper" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="search-input" 
+              placeholder="Search by title (e.g. Inception, Dark Knight, Interstellar, Oppenheimer)..." 
+              autocomplete="off" 
+              spellcheck="false"
+              aria-label="Search movie title"
+            />
+            
+            <button id="searchClearBtn" class="search-clear-btn" title="Clear input" aria-label="Clear input">&times;</button>
+            
+            <button id="searchSubmitBtn" class="search-submit-btn" aria-label="Find Recommendations">
+              <span>Recommend</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Dynamic Autocomplete Dropdown List with Thumbnails & Typo Handling -->
+          <div id="autocompleteList" class="autocomplete-dropdown" role="listbox"></div>
+        </div>
+
+        <!-- Recommender Blend Controls -->
+        <div class="controls-card">
+          <div class="slider-header">
+            <div class="slider-title-group">
+              <span class="slider-title">AI Hybrid Balance (&alpha;)</span>
+              <span class="slider-hint">Tune plot & cast vs audience rating similarity</span>
+            </div>
+            <span id="sliderBadge" class="slider-badge">60% Content / 40% Collab</span>
+          </div>
+
+          <div class="slider-input-wrapper">
+            <input 
+              type="range" 
+              id="weightSlider" 
+              class="weight-slider" 
+              min="0.0" 
+              max="1.0" 
+              step="0.05" 
+              value="0.6" 
+              aria-label="Content versus Collaborative balance slider"
+            />
+          </div>
+
+          <div class="slider-labels">
+            <span>0% (Viewer Ratings)</span>
+            <span>Balanced (Default 60%)</span>
+            <span>100% (Plot & Cast)</span>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="presets-row">
+            <span class="presets-title">Presets:</span>
+            <button class="preset-btn active" data-alpha="0.6">Balanced (60/40)</button>
+            <button class="preset-btn" data-alpha="1.0">Plot & Cast (100%)</button>
+            <button class="preset-btn" data-alpha="0.0">Viewer Ratings (100%)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         3. DYNAMIC RECOMMENDATION RESULTS SECTION ("Because you liked X")
+         ================================================================== -->
+    <section id="recommendationsSection" class="section recommendations-section" style="display: none;">
+      <div class="container">
+        <!-- Seed Movie Hero Banner -->
+        <div id="seedMovieBanner" class="seed-movie-banner">
+          <!-- Dynamically populated by ui.js -->
+        </div>
+
+        <div class="section-header recs-header">
+          <div>
+            <h2 id="resultsTitle" class="section-title">Recommended Movies</h2>
+            <p id="resultsMeta" class="section-meta"></p>
+          </div>
+          
+          <!-- View Switcher (Carousel vs Grid) -->
+          <div class="view-switcher" role="group" aria-label="View switch">
+            <button id="viewCarouselBtn" class="view-btn active" title="Horizontal Row View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="5" width="6" height="14" rx="1"></rect>
+                <rect x="10" y="5" width="6" height="14" rx="1"></rect>
+                <rect x="18" y="5" width="6" height="14" rx="1"></rect>
+              </svg>
+              <span>Row</span>
+            </button>
+            <button id="viewGridBtn" class="view-btn" title="Grid View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Grid</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Carousel Container with Navigation Arrows -->
+        <div class="carousel-wrapper">
+          <button id="recScrollLeft" class="carousel-arrow prev" aria-label="Scroll left">&#8249;</button>
+          <div id="resultsGrid" class="movies-row carousel-mode">
+            <!-- Populated dynamically by ui.js -->
+          </div>
+          <button id="recScrollRight" class="carousel-arrow next" aria-label="Scroll right">&#8250;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         4. POPULAR & TRENDING SHOWCASE
+         ================================================================== -->
+    <section id="popularSection" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-tag">POPULAR SHOWCASE</div>
+            <h2 class="section-title">🔥 Trending & Audience Favorites</h2>
+            <p class="section-meta">Most watched and highly rated movies across our 13,000+ catalog</p>
+          </div>
+          <div class="carousel-controls">
+            <button id="popularScrollLeft" class="carousel-arrow-btn" aria-label="Scroll left">&#8249;</button>
+            <button id="popularScrollRight" class="carousel-arrow-btn" aria-label="Scroll right">&#8250;</button>
+          </div>
+        </div>
+
+        <div id="popularGrid" class="movies-row">
+          <!-- Populated on startup by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         5. TOP RATED MASTERPIECES SHOWCASE
+         ================================================================== -->
+    <section id="topRatedSection" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-tag">CRITICS & FANS</div>
+            <h2 class="section-title">⭐ Masterpieces & Top Rated</h2>
+            <p class="section-meta">All-time cinema classics with exceptional audience ratings</p>
+          </div>
+          <div class="carousel-controls">
+            <button id="topRatedScrollLeft" class="carousel-arrow-btn" aria-label="Scroll left">&#8249;</button>
+            <button id="topRatedScrollRight" class="carousel-arrow-btn" aria-label="Scroll right">&#8250;</button>
+          </div>
+        </div>
+
+        <div id="topRatedGrid" class="movies-row">
+          <!-- Populated on startup by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         6. COMPREHENSIVE CATALOG BROWSE & FILTER SECTION
+         ================================================================== -->
+    <section id="browseSection" class="section browse-section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-tag">EXPANDED CATALOG</div>
+            <h2 class="section-title">🎬 Explore the Full Catalog</h2>
+            <p id="browseCountMeta" class="section-meta">Loading movies catalog...</p>
+          </div>
+        </div>
+
+        <!-- Filter & Sort Toolbar -->
+        <div class="filter-toolbar">
+          <!-- Genre Pills Filter -->
+          <div class="filter-group genre-filter-group">
+            <label class="filter-label">Genre:</label>
+            <div id="genrePills" class="genre-pills-row">
+              <button class="genre-pill active" data-genre="all">All Genres</button>
+              <button class="genre-pill" data-genre="Action">Action</button>
+              <button class="genre-pill" data-genre="Science Fiction">Sci-Fi</button>
+              <button class="genre-pill" data-genre="Drama">Drama</button>
+              <button class="genre-pill" data-genre="Comedy">Comedy</button>
+              <button class="genre-pill" data-genre="Thriller">Thriller</button>
+              <button class="genre-pill" data-genre="Horror">Horror</button>
+              <button class="genre-pill" data-genre="Adventure">Adventure</button>
+              <button class="genre-pill" data-genre="Animation">Animation</button>
+              <button class="genre-pill" data-genre="Romance">Romance</button>
+              <button class="genre-pill" data-genre="Crime">Crime</button>
+              <button class="genre-pill" data-genre="Mystery">Mystery</button>
+              <button class="genre-pill" data-genre="Fantasy">Fantasy</button>
+            </div>
+          </div>
+
+          <!-- Secondary Filters Row (Year, Rating, Sort) -->
+          <div class="filter-dropdowns-row">
+            <!-- Year Filter -->
+            <div class="filter-dropdown-wrapper">
+              <label for="filterYear" class="filter-label">Era:</label>
+              <select id="filterYear" class="filter-select">
+                <option value="all">All Release Years</option>
+                <option value="2020-2026">2020s (Modern Releases)</option>
+                <option value="2010-2019">2010s</option>
+                <option value="2000-2009">2000s</option>
+                <option value="1990-1999">1990s</option>
+                <option value="1880-1989">Classics (Pre-1990)</option>
+              </select>
+            </div>
+
+            <!-- Rating Filter -->
+            <div class="filter-dropdown-wrapper">
+              <label for="filterRating" class="filter-label">Minimum Rating:</label>
+              <select id="filterRating" class="filter-select">
+                <option value="0">Any Rating</option>
+                <option value="8.0">⭐ 8.0+ Exceptional</option>
+                <option value="7.0">⭐ 7.0+ Highly Rated</option>
+                <option value="6.0">⭐ 6.0+ Good</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="filter-dropdown-wrapper">
+              <label for="filterSort" class="filter-label">Sort By:</label>
+              <select id="filterSort" class="filter-select">
+                <option value="popularity">🔥 Most Popular</option>
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="year_desc">📅 Newest First</option>
+                <option value="year_asc">⏳ Oldest First</option>
+                <option value="title">🔤 Title (A to Z)</option>
+              </select>
+            </div>
+
+            <button id="resetFiltersBtn" class="reset-filters-btn" title="Reset all filters">Reset</button>
+          </div>
+        </div>
+
+        <!-- Catalog Movies Grid -->
+        <div id="browseGrid" class="movies-grid">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+        <!-- Load More / Pagination -->
+        <div class="load-more-container">
+          <button id="loadMoreBtn" class="load-more-btn">
+            <span>Load More Movies</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       8. MOVIE DETAIL MODAL
+       ==================================================================== -->
+  <div id="movieModal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <button id="modalCloseBtn" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      <div id="modalContent">
+        <!-- Injected dynamically by ui.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       9. FOOTER
+       ==================================================================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <span class="logo-text">Cine<span class="logo-accent">Match</span></span>
+        <p class="footer-desc">Advanced Machine Learning Movie Recommender • 13,000+ Titles • Offline-Ready</p>
+      </div>
+      <div class="footer-meta">
+        <p>Powered by Hybrid ML & Content Filtering Engine</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       JAVASCRIPT MODULES
+       ==================================================================== -->
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
